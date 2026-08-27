@@ -7,11 +7,19 @@ const api = axios.create({
   withCredentials: true, // so the httpOnly refresh-token cookie is sent
 });
 
-let accessToken = null;
-export const setAccessToken = (token) => { accessToken = token; };
+let accessToken = typeof window !== 'undefined' ? localStorage.getItem('apex_token') : null;
+export const setAccessToken = (token) => {
+  accessToken = token;
+  if (token) {
+    localStorage.setItem('apex_token', token);
+  } else {
+    localStorage.removeItem('apex_token');
+  }
+};
 
 api.interceptors.request.use((config) => {
-  if (accessToken) config.headers.Authorization = `Bearer ${accessToken}`;
+  const token = accessToken || (typeof window !== 'undefined' ? localStorage.getItem('apex_token') : null);
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 

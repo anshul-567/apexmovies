@@ -9,12 +9,21 @@ export default function SeatSelection() {
   const navigate = useNavigate();
   const { selectedSeats, totalAmount, holdSelectedSeats, releaseSelectedSeats } = useBooking();
   const [seats, setSeats] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const isProceedingRef = useRef(false);
 
   const loadSeats = useCallback(() => {
-    api.get(`/shows/${showId}/seats`).then(({ data }) => setSeats(data));
+    setLoading(true);
+    api.get(`/shows/${showId}/seats`)
+      .then(({ data }) => {
+        setSeats(data || []);
+      })
+      .catch((err) => {
+        setError(err.response?.data?.error || 'Failed to load auditorium seat layout');
+      })
+      .finally(() => setLoading(false));
   }, [showId]);
 
   useEffect(() => { loadSeats(); }, [loadSeats]);
@@ -49,7 +58,13 @@ export default function SeatSelection() {
       <p style={styles.subtitle}>Select up to 10 seats per booking</p>
       {error && <div style={styles.error}>{error}</div>}
 
-      <SeatMap seats={seats} />
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--color-text-secondary)' }}>
+          <p style={{ fontSize: 16 }}>Loading live auditorium seats…</p>
+        </div>
+      ) : (
+        <SeatMap seats={seats} />
+      )}
 
       <div style={styles.summaryBar}>
         <div>

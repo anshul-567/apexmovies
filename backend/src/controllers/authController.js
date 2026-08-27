@@ -7,10 +7,12 @@ const {
   hashToken,
 } = require('../utils/jwt');
 
+const isProduction = process.env.NODE_ENV === 'production' || !!process.env.RENDER;
+
 const REFRESH_COOKIE_OPTS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax',
+  secure: isProduction,
+  sameSite: isProduction ? 'none' : 'lax',
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
