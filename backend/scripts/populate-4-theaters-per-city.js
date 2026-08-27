@@ -295,20 +295,15 @@ const THEATERS_BY_CITY = {
   ]
 };
 
-async function provision4TheatersPerCity() {
-  console.log('=== PROVISIONING AT LEAST 4 THEATERS & AUDITORIUM SCREENS PER CITY ===\n');
+async function provision4TheatersFast() {
+  console.log('=== FAST BATCH SEEDING 4 THEATERS PER CITY ===\n');
 
   const client = await pool.connect();
 
   try {
-    await client.query('BEGIN');
-
-    // Fetch existing theaters
-    const existingTheaters = (await client.query('SELECT name, city FROM theaters')).rows;
-    const existingSet = new Set(existingTheaters.map(t => `${t.name.toLowerCase()}:::${t.city.toLowerCase()}`));
-
-    let addedTheaters = 0;
-    let addedScreens = 0;
+    const existing = (await client.query('SELECT id, name, city FROM theaters')).rows;
+    const existingMap = new Map();
+    existing.forEach(t => existingMap.set(`${t.name.toLowerCase()}:::${t.city.toLowerCase()}`, t.id));
 
     const SCREEN_PRESETS = [
       { name: 'Audi 1 4K Laser', rows: 8, cols: 10 },
@@ -317,50 +312,47 @@ async function provision4TheatersPerCity() {
       { name: 'VIP Director Class Recliners', rows: 6, cols: 8 }
     ];
 
-    for (const [city, theaterList] of Object.entries(THEATERS_BY_CITY)) {
-      for (const th of theaterList) {
-        const key = `${th.name.toLowerCase()}:::${city.toLowerCase()}`;
-        let theaterId;
+    const cities = Object.keys(THEATERS_BY_CITY);
+    let done = 0;
 
-        if (!existingSet.has(key)) {
-          const insertTh = await client.query(
+    for (const city of cities) {
+      const list = THEATERS_BY_CITY[city];
+      process.stdout.write(`Provisioning ${city} (${++done}/${cities.length})...\r`);
+
+      for (const th of list) {
+        const key = `${th.name.toLowerCase()}:::${city.toLowerCase()}`;
+        let theaterId = existingMap.get(key);
+
+        if (!theaterId) {
+          const res = await client.query(
             'INSERT INTO theaters (admin_id, name, city, address) VALUES ($1, $2, $3, $4) RETURNING id',
             [ADMIN_ID, th.name, city, th.address]
           );
-          theaterId = insertTh.rows[0].id;
-          addedTheaters++;
-        } else {
-          const findTh = await client.query('SELECT id FROM theaters WHERE LOWER(name) = LOWER($1) AND LOWER(city) = LOWER($2)', [th.name, city]);
-          theaterId = findTh.rows[0].id;
+          theaterId = res.rows[0].id;
+          existingMap.set(key, theaterId);
         }
 
-        // Ensure 4 diverse screens exist for this theater
         const existingScreens = (await client.query('SELECT name FROM screens WHERE theater_id = $1', [theaterId])).rows;
-        const screenNameSet = new Set(existingScreens.map(s => s.name));
+        const screenSet = new Set(existingScreens.map(s => s.name));
 
-        for (const preset of SCREEN_PRESETS) {
-          if (!screenNameSet.has(preset.name)) {
-            const insScreen = await client.query(
+        for (const p of SCREEN_PRESETS) {
+          if (!screenSet.has(p.name)) {
+            const scRes = await client.query(
               'INSERT INTO screens (theater_id, name, total_rows, total_columns) VALUES ($1, $2, $3, $4) RETURNING id',
-              [theaterId, preset.name, preset.rows, preset.cols]
+              [theaterId, p.name, p.rows, p.cols]
             );
-            const scId = insScreen.rows[0].id;
-            addedScreens++;
+            const scId = scRes.rows[0].id;
 
-            // Create seat matrix (Front = regular, Middle = premium, Back = recliner)
-            const rowLetters = Array.from({ length: preset.rows }, (_, i) => String.fromCharCode(65 + i));
+            const rowLetters = Array.from({ length: p.rows }, (_, i) => String.fromCharCode(65 + i));
             const seatValues = [];
 
             for (let rIdx = 0; rIdx < rowLetters.length; rIdx++) {
               const rowLabel = rowLetters[rIdx];
               let seatType = 'regular';
-              if (rIdx >= preset.rows - 2 && preset.rows >= 6) {
-                seatType = 'recliner';
-              } else if (rIdx >= preset.rows - 4 && preset.rows >= 6) {
-                seatType = 'premium';
-              }
+              if (rIdx >= p.rows - 2 && p.rows >= 6) seatType = 'recliner';
+              else if (rIdx >= p.rows - 4 && p.rows >= 6) seatType = 'premium';
 
-              for (let c = 1; c <= preset.cols; c++) {
+              for (let c = 1; c <= p.cols; c++) {
                 seatValues.push(`('${scId}', '${rowLabel}', ${c}, '${seatType}')`);
               }
             }
@@ -373,22 +365,16 @@ async function provision4TheatersPerCity() {
       }
     }
 
-    await client.query('COMMIT');
-    console.log(`✓ Added ${addedTheaters} new theaters and ${addedScreens} auditorium screens across all 47 cities!`);
-
-    // Verify theater count per city
-    const finalCounts = (await client.query('SELECT city, COUNT(id) AS theater_count FROM theaters GROUP BY city ORDER BY theater_count ASC, city ASC')).rows;
-    console.log('\n--- Final Theaters Per City Summary ---');
-    console.table(finalCounts.slice(0, 10));
-    console.log(`Total Cities: ${finalCounts.length}, Total Theaters in DB: ${finalCounts.reduce((sum, r) => sum + parseInt(r.theater_count), 0)}`);
+    console.log('\n✓ All 47 cities provisioned with 4+ theaters and screens!');
+    const finalCounts = (await client.query('SELECT COUNT(DISTINCT city) as total_cities, COUNT(id) as total_theaters FROM theaters')).rows[0];
+    console.table(finalCounts);
 
   } catch (err) {
-    await client.query('ROLLBACK');
-    console.error('Failed to provision theaters:', err);
+    console.error('Error during batch seed:', err);
   } finally {
     client.release();
     await pool.end();
   }
 }
 
-provision4TheatersPerCity();
+provision4TheatersFast();
