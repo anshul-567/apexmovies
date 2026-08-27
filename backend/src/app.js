@@ -17,7 +17,19 @@ const walletRoutes = require('./routes/walletRoutes');
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://localhost:3000', credentials: true }));
+
+const allowedOrigin = process.env.CLIENT_ORIGIN || '*';
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, server-to-server)
+    if (!origin) return callback(null, true);
+    if (allowedOrigin === '*' || origin === allowedOrigin || origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
+}));
 app.use(express.json());
 app.use(cookieParser());
 
