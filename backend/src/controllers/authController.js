@@ -121,4 +121,11 @@ const logout = async (req, res) => {
   res.json({ message: 'Logged out' });
 };
 
-module.exports = { register, login, refresh, logout };
+const getMe = async (req, res) => {
+  const userResult = await query('SELECT id, name, email, role FROM users WHERE id = $1', [req.user.id]);
+  const user = userResult.rows[0];
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  res.json({ user });
+};
+
+module.exports = { register, login, refresh, logout, getMe };
