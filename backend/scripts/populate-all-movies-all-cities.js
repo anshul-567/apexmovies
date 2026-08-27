@@ -1,6 +1,11 @@
 require('dotenv').config();
 const { Pool } = require('pg');
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost') && !process.env.DATABASE_URL.includes('127.0.0.1')
+    ? { rejectUnauthorized: false }
+    : false,
+});
 
 async function seedAllMoviesAllCitiesFast() {
   console.log('=== FAST SEEDING SHOWS FOR ALL MOVIES IN ALL 47 CITIES ===\n');
