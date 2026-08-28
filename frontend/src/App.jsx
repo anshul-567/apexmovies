@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CityProvider } from './context/CityContext';
 import { BookingProvider } from './context/BookingContext';
@@ -93,6 +95,9 @@ export default function App() {
             <Navbar />
             <AppRoutes />
             <Footer />
+            {/* Vercel Web Analytics & Speed Insights */}
+            <Analytics />
+            <SpeedInsights />
           </BookingProvider>
         </CityProvider>
       </AuthProvider>
