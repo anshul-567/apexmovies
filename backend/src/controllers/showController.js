@@ -62,7 +62,10 @@ const listShowsForMovie = async (req, res) => {
   const { movieId } = req.params;
   const { city, date } = req.query;
   const params = [movieId];
-  const conditions = ['sh.movie_id = $1'];
+  const conditions = [
+    'sh.movie_id = $1',
+    "sh.start_time >= (now() - interval '30 minutes')"
+  ];
 
   if (city && city.toLowerCase() !== 'all') {
     params.push(city);
