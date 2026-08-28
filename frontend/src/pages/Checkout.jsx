@@ -497,10 +497,10 @@ export default function Checkout() {
 }
 
 const styles = {
-  page: { padding: '48px', maxWidth: 560, margin: '0 auto' },
-  title: { fontSize: 24, fontWeight: 700, marginBottom: 24 },
+  page: { padding: '24px 16px 48px', maxWidth: 560, margin: '0 auto' },
+  title: { fontSize: 22, fontWeight: 700, marginBottom: 20 },
   error: { background: 'rgba(255,92,122,0.12)', color: 'var(--color-danger)', padding: '12px 16px', borderRadius: 10, marginBottom: 20, fontSize: 14 },
-  summaryCard: { padding: 24, marginBottom: 24 },
+  summaryCard: { padding: 20, marginBottom: 20 },
   showTitle: { fontSize: 14, color: 'var(--color-text-secondary)', marginBottom: 16 },
   seatList: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 },
   seatChip: { background: 'var(--gradient-primary)', color: '#04120F', fontWeight: 700, fontSize: 12, padding: '6px 12px', borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 4 },
@@ -521,7 +521,7 @@ const styles = {
   },
   removeIconBtn: { background: 'none', border: 'none', color: 'var(--color-cyan)', cursor: 'pointer', fontWeight: 700, fontSize: 14, padding: 0 },
   quickOffersHeader: { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--color-text-muted)', marginBottom: 10 },
-  offerChipsGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 },
+  offerChipsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 8 },
   offerChip: {
     padding: '10px 12px', borderRadius: 10, background: 'var(--color-bg-surface)',
     border: '1px dashed var(--color-border)', cursor: 'pointer', transition: 'all 0.2s ease',

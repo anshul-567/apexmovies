@@ -173,13 +173,13 @@ export default function Theaters() {
 }
 
 const styles = {
-  page: { padding: '48px', maxWidth: 1200, margin: '0 auto' },
-  headerRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32, flexWrap: 'wrap', gap: 16 },
-  title: { fontSize: 28, fontWeight: 700, margin: '0 0 6px', fontFamily: 'Sora, sans-serif' },
-  subTitle: { fontSize: 14, color: 'var(--color-text-muted)', margin: 0 },
+  page: { padding: '24px 16px 48px', maxWidth: 1200, margin: '0 auto' },
+  headerRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, flexWrap: 'wrap', gap: 14 },
+  title: { fontSize: 26, fontWeight: 700, margin: '0 0 6px', fontFamily: 'Sora, sans-serif' },
+  subTitle: { fontSize: 13.5, color: 'var(--color-text-muted)', margin: 0 },
   cityPill: {
-    display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600,
-    padding: '6px 14px', borderRadius: 20, border: '1px solid var(--color-border)',
+    display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 600,
+    padding: '6px 12px', borderRadius: 20, border: '1px solid var(--color-border)',
     color: 'var(--color-text-secondary)', background: 'var(--color-bg-surface)',
   },
   cityDot: { width: 6, height: 6, borderRadius: '50%', background: 'var(--color-cyan)', boxShadow: '0 0 8px var(--color-cyan)', display: 'inline-block' },
